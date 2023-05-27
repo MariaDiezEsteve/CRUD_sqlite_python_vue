@@ -2,6 +2,7 @@
 
 import sqlite3
 
+#Se crea una clase estudiantes.py para añadir estudiantes mediante variables y no con con.execute()
 from estudiantes import Estudiante
 
 #1. Conexión con la BBDD: universidad.db
@@ -19,19 +20,47 @@ cu = con.cursor()
 
 cu.execute(""" CREATE TABLE IF NOT EXISTS estudiantes (
                 matricula TEXT PRIMARY KEY,
-                nombre TEXT,
-                apellido TEXT,
-                promedio REAL)            
+                nombre TEXT NOT NULL,
+                apellido TEXT NOT NULL,
+                promedio REAL)
             """)
 
 #Si la tabla existe no la crea
 
-#5. 2º Consulta: Insertar los datos de la tabla 
+#5. 2º Consulta: Insertar los datos de la tabla, varias maneras de hacerlo
+#5.1 Ingresar directamente los datos: VALUES
+#cu.execute(""" INSERT INTO estudiantes VALUES("117", "Nadine", "Diez", 10) """)
 
-cu.execute(""" INSERT INTO estudiantes VALUES("116", "Eiii", "Diez", 4) """)
-
-#Otra manera de insertar datos en una tabla con variables:
+#5.2 Insertar datos en una tabla con variables en forma de tupla:
 est_1 = Estudiante("222", "María", "Esteve", 10)
+est_2 = Estudiante("223", "Carolina", "Esteve", 5.5)
+est_3 = Estudiante("224", "Ana", "Esteve", 6.5)
+est_4 = Estudiante("213", "Fran", "Esteve", 8.5)
+
+#Le estamos pasando dos argumentos al método execute: 1. La consulta que queremos hacer en este caso introducir los datos, y 2. que datos queremos introducir en forma de tupla
+
+cu.execute(" INSERT INTO estudiantes VALUES(?,?,?,?)",
+           (est_3.matricula, est_3.nombre, est_3.apellido, est_3.promedio))
+
+#También se podrían introducir solo los valores que son obligatorios (NOT NULL) en este caso sería:
+# cu.execute(" INSERT INTO estudiantes (matricula, nombre, apellidos) VALUES(?,?,?,?)",
+#            (est_3.matricula, est_3.nombre, est_3.apellido))
+#Para este caso el promedio del estudiante sería None porque no lo hemos incluido
+
+#5.3 Insertar los datos con varibales en forma de diccionario
+
+cu.execute(" INSERT INTO estudiantes VALUES(:matricula,:nombre,:apellido,:promedio)", {
+    "matricula": est_4.matricula, "nombre": est_4.nombre, "apellido": est_4.apellido, "promedio":est_4.promedio})
+
+#5.3 Insertar todos los datos de las variables est_1, est_2, est_4, est_4 a la vez con executemany()
+many_students = [
+    est_1 = Estudiante("222", "María", "Esteve", 10)
+    est_2 = Estudiante("223", "Carolina", "Esteve", 5.5)
+    est_3 = Estudiante("224", "Ana", "Esteve", 6.5)
+    est_4 = Estudiante("213", "Fran", "Esteve", 8.5)
+]
+
+cu.execute(" INSERT INTO estudiantes VALUES(?,?,?,?)", many_students)
 
 #commmit = guarda la petición en la BBDD "la crea"
 con.commit()
@@ -48,6 +77,17 @@ print(estudiantes) #[('111', 'María', 'Diez', 9.5), ('112', 'Diez', 'Esteve', 9
 #fetchmany(numero): cuantos estudiantes queremos que nos devuelva, y nos lo devuelve
 estudiantes = cu.fetchmany(5)
 print(estudiantes)
+
+#7. 4º Consulta: selecionar un estudiante concreto de mi BBDD
+#Necesito dos argumentos: 1º la consulta/petición a la BBDD donde WHERE sería la matricula concreta, y como 2º argumento le pasamos una tupla tenemos que incluir la "," para que se convierta en tupla
+cu.execute("SELECT * FROM estudiantes WHERE matricula=?",("111",))
+
+#Ejemplo para que me devuelva todos los elementos que contengan el apellido = "Diez"
+#cu.execute("SELECT * FROM estudiantes WHERE apellido=?",("Diez",))
+#En este caso, necesitariamos para recoger los datos: estudiantes = cu.fetchall()
+
+
+
 
 
 #Cerra la BBDD
