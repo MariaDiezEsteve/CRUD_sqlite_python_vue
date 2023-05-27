@@ -62,6 +62,7 @@ many_students = [
 
 cu.execute(" INSERT INTO estudiantes VALUES(?,?,?,?)", many_students)
 
+
 #commmit = guarda la petición en la BBDD "la crea"
 con.commit()
 
@@ -85,10 +86,70 @@ cu.execute("SELECT * FROM estudiantes WHERE matricula=?",("111",))
 #Ejemplo para que me devuelva todos los elementos que contengan el apellido = "Diez"
 #cu.execute("SELECT * FROM estudiantes WHERE apellido=?",("Diez",))
 #En este caso, necesitariamos para recoger los datos: estudiantes = cu.fetchall()
-
-
-
-
-
 #Cerra la BBDD
 con.close()
+
+
+""" CREAR UN CRUD MEDIANTE FUNCIONES
+"""
+
+# Insertar Valores 
+#Crearemos una función que se llama estudiantes para ejecutar la inserción de estudiantes
+
+def insertar_estudiantes(estu):
+    con = sqlite3.connect("universidad.db")
+    cu = con.cursor()
+    cu.execute("INSERT INTO estudiantes VALUES (?,?,?,?)", 
+               (estu.matricula, estu.nombre, estu.apellido, estu.promedio))
+    con.commit()
+    con.close()
+    
+#Crear la tabla de estudiantes
+def create_student_table():
+    con = sqlite3.connect("universidad.db")
+    cu = con.cursor()
+    cu.execute("""CREATE TABLE IF NOT EXISTS estudiantes (
+        matricula TEXT PRIMARY KEY, 
+        nombre TEXT NOT NULL,
+        apellido TEXT NOT NULL,
+        promedio REAL)""")
+    con.close()
+
+#Seleccionar los estudiantes por matricula
+def select_student(matricula):
+    con = sqlite3.connect("universidad.db")
+    cu = con.cursor()
+    cu.execute("SELECT * FROM estudiantes WHERE matricula =?", (matricula,))
+    estudiante = cu.fetchall()
+    print(estudiante)
+    con.close()
+    return estudiante
+
+#Actualizar la BBDD
+def update_prom(matricula, prom):
+    con = sqlite3.connect("universidad.db")
+    cu = con.cursor()
+    cu.execute("""UPDATE estudiantes SET promedio =? WHERE matricula=?, (prom, matricula)""")
+    con.commit()
+    con.close()
+
+#Eliminar de la BBD
+def delete_student(matricula):
+    con = sqlite3.connect("universidad.db")
+    cu =con.cursor()
+    cu.execute("DELETE from estudiantes WHERE matricula=?", (matricula,))
+    con.commit()
+    con.close()
+    return "" #En duda si hay que retornar algo vacío
+
+#Seleccionar todos los valores
+def select_all():
+    con = sqlite3.connect("universidad.db")
+    cu =con.cursor()
+    cu.execute("SELECT * from estudiantes")
+    estudiantes = cu.fetchall()
+    con.commit()
+    con.close()
+    return estudiantes #Duda si hay que devolver los estudiantes aquí
+
+  
